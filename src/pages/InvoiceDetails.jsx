@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 
 function InvoiceDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const invoices =
     JSON.parse(localStorage.getItem("invoices")) || [];
@@ -14,6 +15,12 @@ function InvoiceDetails() {
     html2pdf().from(element).save(`${invoice.number}.pdf`);
   };
 
+  const deleteInvoice = () => {
+    const updated = invoices.filter((inv) => inv.id != id);
+    localStorage.setItem("invoices", JSON.stringify(updated));
+    navigate("/invoices");
+  };
+
   if (!invoice) {
     return <p>Invoice not found</p>;
   }
@@ -21,7 +28,6 @@ function InvoiceDetails() {
   return (
     <div style={{ padding: "20px" }}>
       
-      {/* ✅ WRAPPER START */}
       <div id="invoice-content">
         <h2>{invoice.number}</h2>
 
@@ -38,9 +44,7 @@ function InvoiceDetails() {
 
         <h2>Total: ₹{invoice.total}</h2>
       </div>
-      {/* ✅ WRAPPER END */}
 
-      {/* ✅ BUTTON */}
       <button
         onClick={downloadPDF}
         style={{
@@ -50,9 +54,25 @@ function InvoiceDetails() {
           padding: "10px",
           border: "none",
           borderRadius: "6px",
+          width: "100%",
         }}
       >
         Download PDF
+      </button>
+
+      <button
+        onClick={deleteInvoice}
+        style={{
+          marginTop: "10px",
+          background: "red",
+          color: "white",
+          padding: "10px",
+          border: "none",
+          borderRadius: "6px",
+          width: "100%",
+        }}
+      >
+        Delete Invoice
       </button>
 
     </div>

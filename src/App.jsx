@@ -2,11 +2,25 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CreateInvoice from "./pages/CreateInvoice";
 import InvoiceDetails from "./pages/InvoiceDetails";
-
+import Products from "./pages/Products";
 
 /* ---------------- DASHBOARD ---------------- */
 
 function Dashboard() {
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const invoices =
+      JSON.parse(localStorage.getItem("invoices")) || [];
+
+    const totalAmount = invoices.reduce(
+      (sum, inv) => sum + (inv.total || 0),
+      0
+    );
+
+    setTotal(totalAmount);
+  }, []);
+
   const cardStyle = {
     background: "#1c2431",
     padding: "18px",
@@ -29,7 +43,9 @@ function Dashboard() {
 
       <div style={cardStyle}>
         <h3>Total Sale</h3>
-        <p>₹0</p>
+        <p style={{ fontSize: "20px", color: "#2e7dff" }}>
+          ₹{total}
+        </p>
       </div>
 
       <div style={cardStyle}>
@@ -49,7 +65,6 @@ function Dashboard() {
     </div>
   );
 }
-
 /* ---------------- INVOICES ---------------- */
 
 function Invoices() {
@@ -61,75 +76,91 @@ function Invoices() {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Invoices</h2>
+    <div style={{ padding: "15px", paddingBottom: "100px" }}>
+      
+      {/* ✅ HEADER */}
+      <div
+        style={{
+          fontSize: "20px",
+          fontWeight: "bold",
+          marginBottom: "15px",
+        }}
+      >
+        Invoices
+      </div>
 
+      {/* ✅ EMPTY STATE */}
+      {invoices.length === 0 && (
+        <p style={{ textAlign: "center", color: "#888", marginTop: "50px" }}>
+          No invoices yet
+        </p>
+      )}
+
+      {/* ✅ INVOICE LIST */}
+      {invoices.map((inv) => (
+        <Link
+          key={inv.id}
+          to={`/invoice/${inv.id}`}
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <div
+            style={{
+              background: "#1c2431",
+              padding: "15px",
+              borderRadius: "14px",
+              marginBottom: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+            }}
+          >
+            <strong style={{ fontSize: "16px" }}>
+              {inv.number}
+            </strong>
+
+            <p style={{ color: "#bbb", marginTop: "5px" }}>
+              {inv.customer}
+            </p>
+
+            <p style={{ color: "#2e7dff", fontWeight: "bold" }}>
+              ₹{inv.total}
+            </p>
+
+            <small style={{ color: "#888" }}>
+              {inv.date}
+            </small>
+          </div>
+        </Link>
+      ))}
+
+      {/* ✅ FLOATING BUTTON (Android style) */}
       <Link to="/create-invoice">
         <button
           style={{
+            position: "fixed",
+            bottom: "80px",
+            right: "20px",
+            width: "55px",
+            height: "55px",
+            borderRadius: "50%",
             background: "#2e7dff",
             color: "white",
+            fontSize: "24px",
             border: "none",
-            padding: "10px 15px",
-            borderRadius: "8px",
-            marginBottom: "20px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
           }}
         >
-          + Create Invoice
+          +
         </button>
       </Link>
 
-      {invoices.length === 0 && <p>No invoices yet</p>}
-
-     {invoices.map((inv) => (
-  <Link
-    key={inv.id}
-    to={`/invoice/${inv.id}`}
-    style={{ textDecoration: "none", color: "inherit" }}
-  >
-    <div
-      style={{
-        border: "1px solid #ddd",
-        padding: "10px",
-        borderRadius: "8px",
-        marginBottom: "10px",
-      }}
-    >
-      <strong>{inv.number}</strong>
-      <p>{inv.customer}</p>
-      <p>₹{inv.total}</p>
-
-      {inv.items && inv.items.map((item, index) => (
-        <div key={index}>
-          {item.name} - {item.qty} × ₹{item.price}
-        </div>
-      ))}
-
-      <small>{inv.date}</small>
     </div>
-  </Link>
-))}
-
-</div>
-);
+  );
 }
-
 /* ---------------- CUSTOMERS ---------------- */
 
 function Customers() {
   return (
     <div style={{ padding: "20px" }}>
       <h1>Customers</h1>
-    </div>
-  );
-}
-
-/* ---------------- PRODUCTS ---------------- */
-
-function Products() {
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>Products</h1>
     </div>
   );
 }
@@ -198,3 +229,4 @@ function App() {
 }
 
 export default App;
+
