@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { HashRouter, Routes, Route, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CreateInvoice from "./pages/CreateInvoice";
 import InvoiceDetails from "./pages/InvoiceDetails";
@@ -210,7 +210,7 @@ function BottomNav() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div style={{ paddingBottom: "70px" }}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -224,7 +224,7 @@ function App() {
       </div>
 
       <BottomNav />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
