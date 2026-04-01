@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import CreateInvoice from "./pages/CreateInvoice";
 import InvoiceDetails from "./pages/InvoiceDetails";
 import Products from "./pages/Products";
+import EditInvoice from "./pages/EditInvoice";
 
 /* ---------------- DASHBOARD ---------------- */
 
@@ -220,6 +221,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/create-invoice" element={<CreateInvoice />} />
+          <Route path="/edit-invoice/:id" element={<EditInvoice />} />
         </Routes>
       </div>
 
