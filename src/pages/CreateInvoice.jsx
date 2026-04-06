@@ -10,10 +10,18 @@ function CreateInvoice() {
 
   // Load products
   useEffect(() => {
-    const savedProducts =
-      JSON.parse(localStorage.getItem("products")) || [];
-    setProducts(savedProducts);
-  }, []);
+  const loadProducts = () => {
+    const saved = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(saved);
+  };
+
+  loadProducts();
+
+  window.addEventListener("productUpdated", loadProducts);
+
+  return () =>
+    window.removeEventListener("productUpdated", loadProducts);
+}, []);
 
   // Add new item
   const addItem = () => {
@@ -63,6 +71,7 @@ function CreateInvoice() {
       "invoices",
       JSON.stringify([...invoices, newInvoice])
     );
+window.dispatchEvent(new Event("invoiceUpdated"));
 
     navigate("/invoices");
   };
@@ -108,86 +117,91 @@ function CreateInvoice() {
       </button>
 
       {/* Items */}
-      {items.map((item) => (
-        <div
-          key={item.id}
-          style={{
-            background: "#1c2431",
-            padding: "15px",
-            borderRadius: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          {/* Product Dropdown */}
-          <select
-            value={item.name}
-            onChange={(e) => {
-              const selected = products.find(
-                (p) => p.name.trim() === e.target.value.trim()
-              );
+     {items.map((item) => (
+  <div
+    key={item.id}
+    className="card"
+    style={{
+      marginTop: "10px",
+      display: "flex",
+      gap: "10px",
+      alignItems: "center",
+    }}
+  >
+    {/* PRODUCT SELECT */}
+    <select
+      value={item.name}
+      onChange={(e) => {
+        const selected = products.find(
+          (p) => p.name === e.target.value
+        );
 
-              if (!selected) return;
-
-              const updated = items.map((i) =>
-                i.id === item.id
-                  ? {
-                      ...i,
-                      name: selected.name,
-                      price: selected.price,
-                    }
-                  : i
-              );
-
-              setItems(updated);
-            }}
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              marginBottom: "10px",
-              border: "none",
-            }}
-          >
-            <option value="">Select Product</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.name}>
-                {p.name} - ₹{p.price}
-              </option>
-            ))}
-          </select>
-
-          {/* Qty + Price row */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <input
-              type="number"
-              placeholder="Qty"
-              value={item.qty}
-              onChange={(e) =>
-                updateItem(item.id, "qty", Number(e.target.value))
-              }
-              style={{
-                flex: 1,
-                padding: "10px",
-                borderRadius: "8px",
-                border: "none",
-              }}
-            />
-
-            <input
-              type="number"
-              value={item.price}
-              readOnly
-              style={{
-                flex: 1,
-                padding: "10px",
-                borderRadius: "8px",
-                border: "none",
-                background: "#ccc",
-              }}
-            />
-          </div>
-        </div>
+        if (selected) {
+          setItems((prev) =>
+            prev.map((i) =>
+              i.id === item.id
+                ? {
+                    ...i,
+                    name: selected.name,
+                    price: selected.price,
+                  }
+                : i
+            )
+          );
+        }
+      }}
+      style={{ flex: 2 }}
+    >
+      <option value="">Select</option>
+      {products.map((p) => (
+        <option key={p.id} value={p.name}>
+          {p.name}
+        </option>
       ))}
+    </select>
+
+    {/* QTY */}
+    <input
+      type="number"
+      value={item.qty}
+      onChange={(e) =>
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? { ...i, qty: Number(e.target.value) }
+              : i
+          )
+        )
+      }
+      style={{ width: "60px" }}
+    />
+
+    {/* PRICE */}
+    <input
+      value={item.price}
+      readOnly
+      style={{ width: "80px" }}
+    />
+
+    {/* DELETE ITEM */}
+    <button
+      onClick={() =>
+        setItems((prev) =>
+          prev.filter((i) => i.id !== item.id)
+        )
+      }
+      style={{
+        background: "red",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        padding: "5px",
+      }}
+    >
+      ❌
+    </button>
+  </div>
+))}
 
       {/* Total */}
       <h2 style={{ marginTop: "15px" }}>Total: ₹{total}</h2>

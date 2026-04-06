@@ -5,19 +5,48 @@ function Products() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
 
-  // Load products
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("products")) || [];
-    setProducts(saved);
-  }, []);
+  const loadProducts = async () => {
+    try {
+      const res = await fetch("https://fakestoreapi.com/products");
+      const data = await res.json();
 
-  // Add product
+      const formatted = data.map((p) => ({
+        id: p.id,
+        name: p.title,
+        price: Math.round(p.price * 80), // USD → INR approx
+      }));
+
+      setProducts(formatted);
+      localStorage.setItem("products", JSON.stringify(formatted));
+
+      console.log("API products loaded");
+    } catch (error) {
+      console.log("API failed, using fallback");
+
+      const fallback = [
+        { id: 1, name: "Laptop", price: 50000 },
+        { id: 2, name: "Mobile", price: 20000 },
+        { id: 3, name: "TV", price: 40000 },
+      ];
+
+      setProducts(fallback);
+      localStorage.setItem("products", JSON.stringify(fallback));
+    }
+  };
+
+  loadProducts();
+}, []);
+
   const addProduct = () => {
-    if (!name.trim() || !price) return;
+    if (!name || !price) {
+      alert("Enter product details");
+      return;
+    }
 
     const newProduct = {
       id: Date.now(),
-      name: name.trim(), // ✅ fix space issue
+      name,
       price: Number(price),
     };
 
@@ -28,46 +57,22 @@ function Products() {
 
     setName("");
     setPrice("");
-  };
 
-  // Delete product
-  const deleteProduct = (id) => {
-    const updated = products.filter((p) => p.id !== id);
-    setProducts(updated);
-    localStorage.setItem("products", JSON.stringify(updated));
+    // 🔥 notify other pages (like CreateInvoice)
+    window.dispatchEvent(new Event("productUpdated"));
   };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        background: "#0b1320",
-        minHeight: "100vh",
-        color: "white",
-      }}
-    >
-      <h2>Products</h2>
+    <div className="container">
+      <div className="title">Products & Services</div>
 
-      {/* Input Section */}
-      <div
-        style={{
-          background: "#1c2431",
-          padding: "15px",
-          borderRadius: "12px",
-          marginBottom: "20px",
-        }}
-      >
+      {/* ADD PRODUCT FORM */}
+      <div className="card" style={{ marginTop: "15px" }}>
         <input
           placeholder="Product Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "8px",
-            border: "none",
-          }}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
         />
 
         <input
@@ -75,65 +80,34 @@ function Products() {
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "8px",
-            border: "none",
-          }}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
         />
 
         <button
           onClick={addProduct}
+          className="green"
           style={{
             width: "100%",
             padding: "12px",
-            background: "#2e7dff",
-            color: "white",
             border: "none",
-            borderRadius: "8px",
-            fontWeight: "bold",
+            borderRadius: "10px",
           }}
         >
           + Add Product
         </button>
       </div>
 
-      {/* Product List */}
-      {products.length === 0 && <p>No products added</p>}
+      {/* PRODUCT LIST */}
+      {products.length === 0 && (
+        <p style={{ textAlign: "center", marginTop: "20px" }}>
+          No products yet
+        </p>
+      )}
 
       {products.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            background: "#1c2431",
-            padding: "15px",
-            borderRadius: "12px",
-            marginBottom: "10px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <strong>{p.name}</strong>
-            <p style={{ margin: 0, color: "#bbb" }}>₹{p.price}</p>
-          </div>
-
-          <button
-            onClick={() => deleteProduct(p.id)}
-            style={{
-              background: "red",
-              color: "white",
-              border: "none",
-              padding: "8px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            Delete
-          </button>
+        <div className="card" key={p.id} style={{ marginTop: "10px" }}>
+          <strong>{p.name}</strong>
+          <p>₹{p.price}</p>
         </div>
       ))}
     </div>
