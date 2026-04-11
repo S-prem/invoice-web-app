@@ -49,32 +49,27 @@ function CreateInvoice() {
   );
 
   // Save invoice
-  const saveInvoice = () => {
-    if (!customer.trim() || items.length === 0) return;
+ const saveInvoice = async () => {
+  if (!customer.trim() || items.length === 0) return;
 
-    const invoices =
-      JSON.parse(localStorage.getItem("invoices")) || [];
+  await fetch("http://localhost:5000/add-invoice", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      customerName: customer,
+      items: items.map(item => ({
+        product: item.name,
+        amount: item.qty * item.price
+      }))
+    })
+  });
 
-    const invoiceNumber =
-      "INV-" + String(invoices.length + 1).padStart(4, "0");
-
-    const newInvoice = {
-      id: Date.now(),
-      number: invoiceNumber,
-      customer: customer.trim(),
-      items,
-      total,
-      date: new Date().toLocaleDateString(),
-    };
-
-    localStorage.setItem(
-      "invoices",
-      JSON.stringify([...invoices, newInvoice])
-    );
-window.dispatchEvent(new Event("invoiceUpdated"));
-
-    navigate("/invoices");
-  };
+  alert("Invoice saved to database ✅");
+navigate("/invoices");
+window.location.reload(); // 🔥 IMPORTANT
+};
 
   return (
     <div

@@ -5,9 +5,13 @@ function Invoices() {
   const [invoices, setInvoices] = useState([]);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("invoices")) || [];
-    setInvoices(data);
-  }, []);
+  fetch("http://localhost:5000/invoices")
+    .then(res => res.json())
+    .then(data => {
+      console.log("Fetched invoices:", data); // 👈 debug
+      setInvoices(data);
+    });
+}, []);
 
   return (
     <div className="container">
@@ -29,9 +33,8 @@ function Invoices() {
       {invoices.map((inv) => (
         <Link key={inv.id} to={`/invoice/${inv.id}`} style={{ textDecoration: "none" }}>
           <div className="card" style={{ marginTop: "10px" }}>
-            <strong>{inv.number}</strong>
-            <p>{inv.customer}</p>
-            <p style={{ color: "#00c853" }}>₹{inv.total}</p>
+            <strong>Invoice #{inv.id}</strong>
+<p>{inv.customerName}</p>
           </div>
         </Link>
       ))}

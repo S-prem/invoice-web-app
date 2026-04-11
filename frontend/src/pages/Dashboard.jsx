@@ -7,18 +7,23 @@ function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const loadData = () => {
-    const invoices = JSON.parse(localStorage.getItem("invoices")) || [];
+  fetch("http://localhost:5000/invoices")
+    .then(res => res.json())
+    .then(data => {
+      // count
+      setCount(data.length);
 
-    setTotal(invoices.reduce((sum, inv) => sum + (inv.total || 0), 0));
-    setCount(invoices.length);
-  };
+      // total amount calculation
+      const totalAmount = data.reduce((sum, inv) => {
+        const invTotal = inv.items.reduce(
+          (s, item) => s + item.amount,
+          0
+        );
+        return sum + invTotal;
+      }, 0);
 
-  loadData();
-
-  window.addEventListener("storage", loadData);
-
-  return () => window.removeEventListener("storage", loadData);
+      setTotal(totalAmount);
+    });
 }, []);
 
   return (
